@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>jasmine-dom-matchers.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>jasmine-dom-matchers.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/*jsl:declare jasmine*/</span>
+<span class="hljs-comment">/*jsl:declare Sizzle*/</span>
+<span class="hljs-comment">/*jsl:declare Prototype*/</span>
+<span class="hljs-comment">/*jsl:declare jQuery*/</span>
+
+jasmine.DOM = {};
+
+jasmine.DOM.browserTagCaseIndependentHtml = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">html</span>)
+</span>{
+  <span class="hljs-keyword">var</span> div= <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'div'</span>);
+  div.innerHTML= html;
+  <span class="hljs-keyword">return</span> div.innerHTML;
+}
+
+jasmine.DOM.elementToString = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">element</span>)
+</span>{
+  <span class="hljs-keyword">var</span> div= <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'div'</span>);
+  div.appendChild(element.cloneNode(<span class="hljs-literal">true</span>));
+  <span class="hljs-keyword">return</span> div.innerHTML;
+}
+
+jasmine.DOM.trim= <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">string</span>)
+</span>{
+  <span class="hljs-keyword">var</span> str= string.replace(<span class="hljs-regexp">/^\s+/</span>, <span class="hljs-string">''</span>);
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = str.length - <span class="hljs-number">1</span>; i &gt; <span class="hljs-number">0</span>; --i)
+    <span class="hljs-keyword">if</span> (<span class="hljs-regexp">/\S/</span>.test(str.charAt(i)))
+    {
+      str = str.substring(<span class="hljs-number">0</span>, i + <span class="hljs-number">1</span>);
+      <span class="hljs-keyword">break</span>;
+    }
+  <span class="hljs-keyword">return</span> str;
+}
+
+jasmine.DOM.slice= <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">arrayLike, startIndex</span>)
+</span>{
+  <span class="hljs-keyword">return</span> [].slice.call(arrayLike, startIndex||<span class="hljs-number">0</span>);
+}
+
+jasmine.DOM.uniqueId= <span class="hljs-number">1</span>;
+jasmine.DOM.assignId= <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">element</span>)
+</span>{
+  <span class="hljs-keyword">return</span> element.id || (element.id=(<span class="hljs-string">'jasmine_id_'</span> + jasmine.DOM.uniqueId++));
+};
+
+<span class="hljs-comment">/**
+  jasmine.DOM.queryAll(selector[, scope]) -&gt; array
+ */</span> 
+jasmine.DOM.queryAll= (<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+  <span class="hljs-keyword">if</span> (<span class="hljs-string">'undefined'</span>!==<span class="hljs-keyword">typeof</span>(Sizzle))
+    <span class="hljs-keyword">return</span> Sizzle;
+  <span class="hljs-keyword">if</span> (<span class="hljs-string">'undefined'</span>!==<span class="hljs-keyword">typeof</span>(Prototype))
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">selector, node</span>)
+    </span>{
+      <span class="hljs-keyword">return</span> Element.getElementsBySelector(node||<span class="hljs-built_in">document</span>, selector);
+    };
+  <span class="hljs-keyword">if</span> (<span class="hljs-string">'undefined'</span>!==<span class="hljs-keyword">typeof</span>(jQuery))
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">selector, node</span>)
+    </span>{
+      <span class="hljs-keyword">var</span> result= jQuery(selector, node);
+      <span class="hljs-keyword">var</span> nodes= [];
+      <span class="hljs-keyword">var</span> len= result.length;
+
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i=<span class="hljs-number">0</span>; i&lt;len; ++i)
+        nodes.push(result[i]);
+      <span class="hljs-keyword">return</span> nodes;
+    };
+  <span class="hljs-keyword">if</span> (<span class="hljs-built_in">document</span>.querySelectorAll)
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">selector, node</span>)
+    </span>{
+      <span class="hljs-keyword">if</span> (!node)
+        node= <span class="hljs-built_in">document</span>;
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (node!==<span class="hljs-built_in">document</span>)
+        selector = [<span class="hljs-string">'#'</span>, jasmine.DOM.assignId(node), <span class="hljs-string">' '</span>, selector].join(<span class="hljs-string">''</span>);
+      <span class="hljs-keyword">return</span> jasmine.DOM.slice(node.querySelectorAll(selector));
+    };
+    
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">"Can't determine selector engine..."</span>);
+})();
+
+
+
+jasmine.DOM.matchers = {};
+
+
+(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+  <span class="hljs-keyword">var</span> matchers = {
+  
+    toHaveClass: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">className</span>)
+    </span>{
+      <span class="hljs-keyword">var</span> classes= jasmine.DOM.trim(<span class="hljs-keyword">this</span>.actual.className).split(<span class="hljs-string">" "</span>);
+      <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>!==classes.indexOf(className);
+    },
+
+    toBeVisible: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)
+    </span>{
+      <span class="hljs-keyword">return</span> (<span class="hljs-keyword">this</span>.actual.offsetWidth!==<span class="hljs-number">0</span> || <span class="hljs-keyword">this</span>.actual.offsetHeight!==<span class="hljs-number">0</span>);
+    },
+
+    toBeHidden: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)
+    </span>{
+      <span class="hljs-keyword">return</span> (<span class="hljs-number">0</span>===<span class="hljs-keyword">this</span>.actual.offsetWidth &amp;&amp; <span class="hljs-number">0</span>===<span class="hljs-keyword">this</span>.actual.offsetHeight);
+    },
+
+    toBeSelected: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)
+    </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.actual.selected;
+    },
+
+    toBeChecked: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)
+    </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.actual.checked;
+    },
+
+    toBeEmpty: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)
+    </span>{
+      <span class="hljs-keyword">return</span> !<span class="hljs-keyword">this</span>.actual.firstChild;
+    },
+
+    toExist: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)
+    </span>{
+      <span class="hljs-keyword">return</span> !!<span class="hljs-keyword">this</span>.actual;
+    },
+
+    toHaveAttr: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">attributeName, expectedAttributeValue</span>)
+    </span>{
+      <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.actual.hasAttribute(attributeName))
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+      <span class="hljs-keyword">return</span> comparePropertyValues(<span class="hljs-keyword">this</span>.actual.getAttribute(attributeName), expectedAttributeValue);
+    },
+
+    toHaveId: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">id</span>)
+    </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.actual.id===id;
+    },
+
+    toHaveHtml: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">html</span>)
+    </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.actual.innerHTML === jasmine.DOM.browserTagCaseIndependentHtml(html);
+    },
+
+    toHaveText: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">text</span>)
+    </span>{
+      <span class="hljs-keyword">return</span> (<span class="hljs-keyword">this</span>.actual.textContent||<span class="hljs-keyword">this</span>.actual.innerText) === text;
+    },
+
+    toHaveValue: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value</span>)
+    </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.actual.value === value;
+    },
+
+    toMatchSelector: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">selector</span>)
+    </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>This isn’t efficient</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">var</span> nodes= jasmine.DOM.queryAll(selector);
+      <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>!==nodes.indexOf(<span class="hljs-keyword">this</span>.actual);
+    },
+
+    toContain: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">selector</span>)
+    </span>{
+      <span class="hljs-keyword">var</span> nodes= jasmine.DOM.queryAll(selector, <span class="hljs-keyword">this</span>.actual);
+      <span class="hljs-keyword">return</span> nodes.length &gt; <span class="hljs-number">0</span>;
+    }
+  };
+
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">comparePropertyValues</span>(<span class="hljs-params">actualValue, expectedValue</span>)
+  </span>{
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">void</span>(<span class="hljs-number">0</span>) === expectedValue)
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">void</span>(<span class="hljs-number">0</span>) !== actualValue;
+    <span class="hljs-keyword">return</span> actualValue == expectedValue;
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">bindMatcher</span>(<span class="hljs-params">methodName</span>)
+  </span>{
+    <span class="hljs-keyword">var</span> originalMatcher = jasmine.Matchers.prototype[methodName];
+
+    jasmine.DOM.matchers[methodName] = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)
+    </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p> If the actual value is a DOM node…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.actual &amp;&amp; <span class="hljs-keyword">this</span>.actual.nodeType)
+      {
+        <span class="hljs-keyword">var</span> result = matchers[methodName].apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+        <span class="hljs-keyword">this</span>.actual = jasmine.DOM.elementToString(<span class="hljs-keyword">this</span>.actual);
+        <span class="hljs-keyword">return</span> result;
+      }
+
+      <span class="hljs-keyword">if</span> (originalMatcher)
+        <span class="hljs-keyword">return</span> originalMatcher.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    }
+    
+  }
+
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> methodName <span class="hljs-keyword">in</span> matchers)
+    bindMatcher(methodName);
+    
+})();
+
+beforeEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">this</span>.addMatchers(jasmine.DOM.matchers);
+});
+
+afterEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  jasmine.getFixtures().cleanUp();
+});</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+
+meatLoaf = 
+  wouldDo: (action = "anything", reason = "love") ->
+    if action isnt "that"
+      lyric = "I would do #{action} for #{reason}" 
+    else 
+      lyric = "But I won't do that (not even for #{reason})"
+    console.log lyric
+
+  sing: ->
+    for line in [1..5]
+      if line < 3 then @wouldDo() else @wouldDo "that"
+
+
+if process.argv[2] then meatLoaf.wouldDo(process.argv[2],process.argv[3]) else meatLoaf.sing()
+
+

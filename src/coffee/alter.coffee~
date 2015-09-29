@@ -1,0 +1,11 @@
+
+meatLoafWouldDo = (action = "anything", reason = "love") ->
+  if action isnt "that"
+    lyric = "I would do #{action} for #{reason}" 
+  else 
+    lyric = "But I won't do that"
+  console.log lyric
+
+
+meatLoafWouldDo process.argv[3],process.argv[4]
+

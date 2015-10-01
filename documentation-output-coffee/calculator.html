@@ -30,16 +30,75 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Calculator</span></span>
+            <div class="content"><div class='highlight'><pre>calc = <span class="hljs-string">''</span>
 
-  <span class="hljs-attribute">init</span>: <span class="hljs-function">-&gt;</span>
-    keys = <span class="hljs-built_in">document</span>.getElementsByClassName <span class="hljs-string">'key'</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Calculator</span></span>
+
+  <span class="hljs-attribute">mode</span>: <span class="hljs-string">'DOZ'</span>
+  <span class="hljs-attribute">modeDiv</span>: <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'mode'</span>)
+
+  <span class="hljs-attribute">init</span>: <span class="hljs-function">-&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Add generic click handler to digits and operator keys</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    keys = <span class="hljs-built_in">document</span>.getElementsByClassName <span class="hljs-string">'key'</span>
     <span class="hljs-keyword">for</span> key <span class="hljs-keyword">in</span> keys
-      key.addEventListener <span class="hljs-string">'click'</span>, <span class="hljs-property">@clickHandler</span>
+      key.addEventListener <span class="hljs-string">'click'</span>, <span class="hljs-function"><span class="hljs-params">(event)</span> =&gt;</span>
+        <span class="hljs-property">@clickHandler</span> event</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Add specific handlers to ‘Clear’, ‘Equals’ and ‘Mode’ keys</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'mode'</span>).addEventListener(<span class="hljs-string">'click'</span>, <span class="hljs-property">@modeToggle</span>)
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'equals'</span>).addEventListener(<span class="hljs-string">'click'</span>, <span class="hljs-property">@equals</span>)
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'clear'</span>).addEventListener(<span class="hljs-string">'click'</span>, <span class="hljs-property">@reset</span>)
+
+    <span class="hljs-property">@outputDiv</span> = <span class="hljs-built_in">document</span>.getElementById <span class="hljs-string">'output'</span>
+    <span class="hljs-property">@mode</span> = <span class="hljs-string">'DOZ'</span>
+    <span class="hljs-property">@equation</span> = <span class="hljs-string">''</span>
     <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
 
-  <span class="hljs-attribute">clickHandler</span>: <span class="hljs-function">-&gt;</span>
-    <span class="hljs-built_in">console</span>.log <span class="hljs-string">'clicked'</span>
+  <span class="hljs-attribute">clickHandler</span>: <span class="hljs-function"><span class="hljs-params">(event)</span> -&gt;</span>
+    current = event.target.innerHTML
+    <span class="hljs-built_in">console</span>.log current
+    <span class="hljs-property">@equation</span> += current
+    <span class="hljs-property">@display</span>(<span class="hljs-property">@equation</span>)
+
+  <span class="hljs-attribute">modeToggle</span>: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@mode</span> = <span class="hljs-string">'DOZ'</span>
+      <span class="hljs-property">@mode</span> = <span class="hljs-string">'DEC'</span>
+      <span class="hljs-property">@modeDiv</span>.innerHTML = <span class="hljs-string">'DEC'</span>
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@mode</span> = <span class="hljs-string">'DOZ'</span>
+      <span class="hljs-property">@modeDiv</span>.innerHTML =<span class="hljs-string">'DOZ'</span>
+
+  <span class="hljs-attribute">reset</span>: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-property">@equation</span> = <span class="hljs-string">''</span>
+    <span class="hljs-property">@outputDiv</span>.innerHTML = <span class="hljs-string">''</span>
+
+  <span class="hljs-attribute">display</span>: <span class="hljs-function"><span class="hljs-params">(output)</span> -&gt;</span>
+    <span class="hljs-property">@outputDiv</span>.innerHTML = output
 
   <span class="hljs-attribute">dozToDec</span>: <span class="hljs-function"><span class="hljs-params">(dozInt)</span> -&gt;</span>
     neg = <span class="hljs-literal">false</span>
@@ -62,8 +121,10 @@
 
     res
 
-calc = <span class="hljs-keyword">new</span> Calculator
-calc.init()</pre></div></div>
+<span class="hljs-built_in">window</span>.onload = <span class="hljs-function">-&gt;</span>
+  <span class="hljs-built_in">console</span>.log <span class="hljs-string">'loaded'</span>
+  calc = <span class="hljs-keyword">new</span> Calculator
+  calc.init()</pre></div></div>
             
         </li>
         

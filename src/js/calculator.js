@@ -1,20 +1,59 @@
 var Calculator, calc;
 
+calc = '';
+
 Calculator = (function() {
   function Calculator() {}
+
+  Calculator.prototype.mode = 'DOZ';
+
+  Calculator.prototype.modeDiv = document.getElementById('mode');
 
   Calculator.prototype.init = function() {
     var j, key, keys, len;
     keys = document.getElementsByClassName('key');
     for (j = 0, len = keys.length; j < len; j++) {
       key = keys[j];
-      key.addEventListener('click', this.clickHandler);
+      key.addEventListener('click', (function(_this) {
+        return function(event) {
+          return _this.clickHandler(event);
+        };
+      })(this));
     }
+    document.getElementById('mode').addEventListener('click', this.modeToggle);
+    document.getElementById('equals').addEventListener('click', this.equals);
+    document.getElementById('clear').addEventListener('click', this.reset);
+    this.outputDiv = document.getElementById('output');
+    this.mode = 'DOZ';
+    this.equation = '';
     return true;
   };
 
-  Calculator.prototype.clickHandler = function() {
-    return console.log('clicked');
+  Calculator.prototype.clickHandler = function(event) {
+    var current;
+    current = event.target.innerHTML;
+    console.log(current);
+    this.equation += current;
+    return this.display(this.equation);
+  };
+
+  Calculator.prototype.modeToggle = function() {
+    if (this.mode = 'DOZ') {
+      this.mode = 'DEC';
+      return this.modeDiv.innerHTML = 'DEC';
+    } else {
+      this.mode = 'DOZ';
+      return this.modeDiv.innerHTML = 'DOZ';
+    }
+  };
+
+  Calculator.prototype.reset = function() {
+    this.equation = '';
+    return this.outputDiv.innerHTML = '';
+  };
+
+  Calculator.prototype.display = function(output) {
+    return this.outputDiv.innerHTML = output;
   };
 
   Calculator.prototype.dozToDec = function(dozInt) {
@@ -49,6 +88,8 @@ Calculator = (function() {
 
 })();
 
-calc = new Calculator;
-
-calc.init();
+window.onload = function() {
+  console.log('loaded');
+  calc = new Calculator;
+  return calc.init();
+};

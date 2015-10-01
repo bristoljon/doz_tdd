@@ -30,53 +30,77 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> Calculator, calc;
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> Calculator, calc,
+  bind = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">fn, me</span>)</span>{ <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{ <span class="hljs-keyword">return</span> fn.apply(me, <span class="hljs-built_in">arguments</span>); }; };
 
 calc = <span class="hljs-string">''</span>;
 
 Calculator = (<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
-  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Calculator</span>(<span class="hljs-params"></span>) </span>{}
-
-  Calculator.prototype.mode = <span class="hljs-string">'DOZ'</span>;
-
-  Calculator.prototype.modeDiv = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'mode'</span>);
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Calculator</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">this</span>.transform = bind(<span class="hljs-keyword">this</span>.transform, <span class="hljs-keyword">this</span>);
+    <span class="hljs-keyword">this</span>.reset = bind(<span class="hljs-keyword">this</span>.reset, <span class="hljs-keyword">this</span>);
+    <span class="hljs-keyword">this</span>.modeToggle = bind(<span class="hljs-keyword">this</span>.modeToggle, <span class="hljs-keyword">this</span>);
+    <span class="hljs-keyword">this</span>.clickHandler = bind(<span class="hljs-keyword">this</span>.clickHandler, <span class="hljs-keyword">this</span>);
+  }
 
   Calculator.prototype.init = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">var</span> j, key, keys, len;
-    keys = <span class="hljs-built_in">document</span>.getElementsByClassName(<span class="hljs-string">'key'</span>);
-    <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>, len = keys.length; j &lt; len; j++) {
-      key = keys[j];
-      key.addEventListener(<span class="hljs-string">'click'</span>, (<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">_this</span>) </span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">event</span>) </span>{
-          <span class="hljs-keyword">return</span> _this.clickHandler(event);
-        };
-      })(<span class="hljs-keyword">this</span>));
+    <span class="hljs-keyword">var</span> digits, j, k, key, len, len1, ops, ref, thing;
+    digits = <span class="hljs-built_in">document</span>.getElementsByClassName(<span class="hljs-string">'digit'</span>);
+    ops = <span class="hljs-built_in">document</span>.getElementsByClassName(<span class="hljs-string">'operator'</span>);
+    ref = [digits, ops];
+    <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>, len = ref.length; j &lt; len; j++) {
+      thing = ref[j];
+      <span class="hljs-keyword">for</span> (k = <span class="hljs-number">0</span>, len1 = thing.length; k &lt; len1; k++) {
+        key = thing[k];
+        key.addEventListener(<span class="hljs-string">'click'</span>, (<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">_this</span>) </span>{
+          <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">event</span>) </span>{
+            <span class="hljs-keyword">return</span> _this.clickHandler(event);
+          };
+        })(<span class="hljs-keyword">this</span>));
+      }
     }
     <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'mode'</span>).addEventListener(<span class="hljs-string">'click'</span>, <span class="hljs-keyword">this</span>.modeToggle);
     <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'equals'</span>).addEventListener(<span class="hljs-string">'click'</span>, <span class="hljs-keyword">this</span>.equals);
     <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'clear'</span>).addEventListener(<span class="hljs-string">'click'</span>, <span class="hljs-keyword">this</span>.reset);
     <span class="hljs-keyword">this</span>.outputDiv = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'output'</span>);
+    <span class="hljs-keyword">this</span>.modeDiv = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'mode'</span>);
     <span class="hljs-keyword">this</span>.mode = <span class="hljs-string">'DOZ'</span>;
     <span class="hljs-keyword">this</span>.equation = <span class="hljs-string">''</span>;
     <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
   };
 
   Calculator.prototype.clickHandler = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">event</span>) </span>{
-    <span class="hljs-keyword">var</span> current;
-    current = event.target.innerHTML;
-    <span class="hljs-built_in">console</span>.log(current);
-    <span class="hljs-keyword">this</span>.equation += current;
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.display(<span class="hljs-keyword">this</span>.equation);
+    <span class="hljs-keyword">var</span> currentChar, digit, lastChar;
+    currentChar = event.target.innerHTML;
+    digit = event.target.className.match(<span class="hljs-regexp">/\bdigit\b/</span>);
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.equation.length !== <span class="hljs-number">0</span>) {
+      lastChar = <span class="hljs-keyword">this</span>.equation.charAt(<span class="hljs-keyword">this</span>.equation.length - <span class="hljs-number">1</span>);
+      <span class="hljs-keyword">if</span> (!digit) {
+        <span class="hljs-keyword">if</span> (lastChar.match(<span class="hljs-regexp">/[^0-9XL]/</span>)) {
+          <span class="hljs-keyword">this</span>.equation = <span class="hljs-keyword">this</span>.equation.substr(<span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.equation.length - <span class="hljs-number">1</span>);
+        }
+      }
+    }
+    <span class="hljs-keyword">this</span>.equation += currentChar;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.outputDiv.innerHTML = <span class="hljs-keyword">this</span>.equation;
   };
 
   Calculator.prototype.modeToggle = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.mode = <span class="hljs-string">'DOZ'</span>) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.mode === <span class="hljs-string">'DOZ'</span>) {
       <span class="hljs-keyword">this</span>.mode = <span class="hljs-string">'DEC'</span>;
+      <span class="hljs-keyword">this</span>.equation = <span class="hljs-keyword">this</span>.dozToDec(<span class="hljs-keyword">this</span>.equation);
+      <span class="hljs-keyword">this</span>.outputDiv.innerHTML = <span class="hljs-keyword">this</span>.equation;
       <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.modeDiv.innerHTML = <span class="hljs-string">'DEC'</span>;
     } <span class="hljs-keyword">else</span> {
       <span class="hljs-keyword">this</span>.mode = <span class="hljs-string">'DOZ'</span>;
+      <span class="hljs-keyword">this</span>.equation = <span class="hljs-keyword">this</span>.decToDoz(<span class="hljs-keyword">this</span>.equation);
+      <span class="hljs-keyword">this</span>.outputDiv.innerHTML = <span class="hljs-keyword">this</span>.equation;
       <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.modeDiv.innerHTML = <span class="hljs-string">'DOZ'</span>;
     }
+  };
+
+  Calculator.prototype.equals = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'equals pressed'</span>);
   };
 
   Calculator.prototype.reset = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
@@ -84,36 +108,83 @@ Calculator = (<span class="hljs-function"><span class="hljs-keyword">function</s
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.outputDiv.innerHTML = <span class="hljs-string">''</span>;
   };
 
-  Calculator.prototype.display = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">output</span>) </span>{
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.outputDiv.innerHTML = output;
+  Calculator.prototype.dozToDec = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">dozInt</span>) </span>{
+    <span class="hljs-keyword">var</span> d, i, j, n, neg, ref, res;
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'dozToDec ran with: '</span> + dozInt);
+    dozInt = <span class="hljs-keyword">this</span>.transform(dozInt);
+    <span class="hljs-keyword">if</span> (dozInt !== <span class="hljs-string">''</span>) {
+      neg = <span class="hljs-literal">false</span>;
+      <span class="hljs-keyword">if</span> (dozInt.charAt(<span class="hljs-number">0</span>) === <span class="hljs-string">'-'</span>) {
+        dozInt = dozInt.substring(<span class="hljs-number">1</span>);
+        neg = <span class="hljs-literal">true</span>;
+      }
+      res = <span class="hljs-number">0</span>;
+      n = <span class="hljs-number">0</span>;
+      <span class="hljs-keyword">for</span> (i = j = <span class="hljs-number">0</span>, ref = dozInt.length - <span class="hljs-number">1</span>; <span class="hljs-number">0</span> &lt;= ref ? j &lt;= ref : j &gt;= ref; i = <span class="hljs-number">0</span> &lt;= ref ? ++j : --j) {
+        d = dozInt.charAt(i);
+        <span class="hljs-keyword">if</span> (d === <span class="hljs-string">'b'</span>) {
+          n = <span class="hljs-number">11</span>;
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (d === <span class="hljs-string">'a'</span>) {
+          n = <span class="hljs-number">10</span>;
+        } <span class="hljs-keyword">else</span> {
+          n = <span class="hljs-built_in">parseInt</span>(d);
+        }
+        res += n * <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">12</span>, dozInt.length - i - <span class="hljs-number">1</span>);
+      }
+      <span class="hljs-keyword">if</span> (neg) {
+        res = <span class="hljs-string">'-'</span> + res;
+      }
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'dozToDec end with: '</span> + res);
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.transform(res);
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>;
+    }
   };
 
-  Calculator.prototype.dozToDec = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">dozInt</span>) </span>{
-    <span class="hljs-keyword">var</span> d, i, j, len, n, neg, ref, res;
-    neg = <span class="hljs-literal">false</span>;
-    <span class="hljs-keyword">if</span> (dozInt.charAt(<span class="hljs-number">0</span>) === <span class="hljs-string">'-'</span>) {
-      dozInt = dozInt.substring(<span class="hljs-number">1</span>);
-      neg = <span class="hljs-literal">true</span>;
+  Calculator.prototype.decToDoz = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">dec</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'decToDoz ran with: '</span> + dec);
+    dec = <span class="hljs-keyword">this</span>.transform(dec);
+    <span class="hljs-keyword">if</span> (dec !== <span class="hljs-string">''</span>) {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'decToDoz ends with: '</span> + <span class="hljs-built_in">parseInt</span>(dec).toString(<span class="hljs-number">12</span>));
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.transform(<span class="hljs-built_in">parseInt</span>(dec).toString(<span class="hljs-number">12</span>));
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>;
     }
-    res = <span class="hljs-number">0</span>;
-    n = <span class="hljs-number">0</span>;
-    ref = dozInt.length;
-    <span class="hljs-keyword">for</span> (j = <span class="hljs-number">0</span>, len = ref.length; j &lt; len; j++) {
-      i = ref[j];
-      d = dozInt.charAt(i);
-      <span class="hljs-keyword">if</span> (d === <span class="hljs-string">'b'</span>) {
-        n = <span class="hljs-number">11</span>;
-      } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (d === <span class="hljs-string">'a'</span>) {
-        n = <span class="hljs-number">10</span>;
-      } <span class="hljs-keyword">else</span> {
-        n = <span class="hljs-built_in">parseInt</span>(d);
+  };
+
+  Calculator.prototype.transform = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">input</span>) </span>{
+    <span class="hljs-keyword">var</span> equation, i, j, output, ref;
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Transform ran with: '</span> + input);
+    input = input.toString();
+    <span class="hljs-keyword">if</span> (input.match(<span class="hljs-regexp">/[^0-9XLab]/g</span>)) {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'is an equation'</span>);
+      output = [];
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Input is an equation"</span>);
+      equation = input.replace(<span class="hljs-regexp">/\*/g</span>, <span class="hljs-string">"#*#"</span>);
+      equation = equation.replace(<span class="hljs-regexp">/\//g</span>, <span class="hljs-string">"#/#"</span>);
+      equation = equation.replace(<span class="hljs-regexp">/\-/g</span>, <span class="hljs-string">"#-#"</span>);
+      equation = equation.replace(<span class="hljs-regexp">/\+/g</span>, <span class="hljs-string">"#+#"</span>);
+      equation = equation.split(<span class="hljs-regexp">/\#/g</span>);
+      <span class="hljs-keyword">for</span> (i = j = <span class="hljs-number">0</span>, ref = equation.length - <span class="hljs-number">1</span>; <span class="hljs-number">0</span> &lt;= ref ? j &lt;= ref : j &gt;= ref; i = <span class="hljs-number">0</span> &lt;= ref ? ++j : --j) {
+        <span class="hljs-keyword">if</span> (equation[i].match(<span class="hljs-regexp">/[0-9XLab]/</span>)) {
+          output[i] = <span class="hljs-keyword">this</span>.transform(equation[i]);
+        } <span class="hljs-keyword">else</span> {
+          output[i] = equation[i];
+        }
       }
-      res += n * <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">12</span>, dozInt.length - i - <span class="hljs-number">1</span>);
+      <span class="hljs-keyword">return</span> output.join(<span class="hljs-string">''</span>);
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'isnt an equation'</span>);
+      <span class="hljs-keyword">if</span> (input.match(<span class="hljs-regexp">/[XL]/g</span>)) {
+        input = input.replace(<span class="hljs-regexp">/X/g</span>, <span class="hljs-string">'a'</span>);
+        input = input.replace(<span class="hljs-regexp">/L/g</span>, <span class="hljs-string">'b'</span>);
+      } <span class="hljs-keyword">else</span> {
+        input = input.replace(<span class="hljs-regexp">/a/g</span>, <span class="hljs-string">'X'</span>);
+        input = input.replace(<span class="hljs-regexp">/b/g</span>, <span class="hljs-string">'L'</span>);
+      }
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'returned: '</span> + input);
+      <span class="hljs-keyword">return</span> input;
     }
-    <span class="hljs-keyword">if</span> (neg) {
-      res = <span class="hljs-string">'-'</span> + res;
-    }
-    <span class="hljs-keyword">return</span> res;
   };
 
   <span class="hljs-keyword">return</span> Calculator;

@@ -15,6 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+
     ],
 
 
@@ -32,18 +33,20 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['mocha'],
+    reporters: ['nyan'],
 
-    // reporter options
-    mochaReporter: {
-      output: 'full'
+    nyanReporter: {
+      // suppress the error report at the end of the test run
+      suppressErrorReport: false,
+
+      // suppress the red background on errors in the error
+      // report at the end of the test run
+      suppressErrorHighlighting: true,
+
+      // increase the number of rainbow lines displayed
+      // enforced min = 4, enforced max = terminal height - 1
+      numberOfRainbowLines: 100, // default is 4
     },
-
-    plugins: [
-      'karma-jasmine',
-      'karma-mocha-reporter',
-      'karma-chrome-launcher'
-    ],
 
     // web server port
     port: 9876,

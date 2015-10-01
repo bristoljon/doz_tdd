@@ -34,8 +34,6 @@
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Calculator</span></span>
 
-  <span class="hljs-attribute">mode</span>: <span class="hljs-string">'DOZ'</span>
-  <span class="hljs-attribute">modeDiv</span>: <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'mode'</span>)
 
   <span class="hljs-attribute">init</span>: <span class="hljs-function">-&gt;</span></pre></div></div>
             
@@ -52,10 +50,13 @@
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    keys = <span class="hljs-built_in">document</span>.getElementsByClassName <span class="hljs-string">'key'</span>
-    <span class="hljs-keyword">for</span> key <span class="hljs-keyword">in</span> keys
-      key.addEventListener <span class="hljs-string">'click'</span>, <span class="hljs-function"><span class="hljs-params">(event)</span> =&gt;</span>
-        <span class="hljs-property">@clickHandler</span> event</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    digits = <span class="hljs-built_in">document</span>.getElementsByClassName <span class="hljs-string">'digit'</span>
+    ops = <span class="hljs-built_in">document</span>.getElementsByClassName <span class="hljs-string">'operator'</span>
+
+    <span class="hljs-keyword">for</span> thing <span class="hljs-keyword">in</span> [digits,ops]
+      <span class="hljs-keyword">for</span> key <span class="hljs-keyword">in</span> thing
+        key.addEventListener <span class="hljs-string">'click'</span>, <span class="hljs-function"><span class="hljs-params">(event)</span> =&gt;</span>
+          <span class="hljs-property">@clickHandler</span> event</pre></div></div>
             
         </li>
         
@@ -74,52 +75,245 @@
     <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'equals'</span>).addEventListener(<span class="hljs-string">'click'</span>, <span class="hljs-property">@equals</span>)
     <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'clear'</span>).addEventListener(<span class="hljs-string">'click'</span>, <span class="hljs-property">@reset</span>)
 
-    <span class="hljs-property">@outputDiv</span> = <span class="hljs-built_in">document</span>.getElementById <span class="hljs-string">'output'</span>
+    <span class="hljs-property">@outputDiv</span> = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'output'</span>)
+    <span class="hljs-property">@modeDiv</span> = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'mode'</span>)
+
     <span class="hljs-property">@mode</span> = <span class="hljs-string">'DOZ'</span>
     <span class="hljs-property">@equation</span> = <span class="hljs-string">''</span>
     <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
 
-  <span class="hljs-attribute">clickHandler</span>: <span class="hljs-function"><span class="hljs-params">(event)</span> -&gt;</span>
-    current = event.target.innerHTML
-    <span class="hljs-built_in">console</span>.log current
-    <span class="hljs-property">@equation</span> += current
-    <span class="hljs-property">@display</span>(<span class="hljs-property">@equation</span>)
+  <span class="hljs-attribute">clickHandler</span>: <span class="hljs-function"><span class="hljs-params">(event)</span> =&gt;</span>
+    currentChar = event.target.innerHTML
+    digit = event.target.className.match <span class="hljs-regexp">/\bdigit\b/</span>
 
-  <span class="hljs-attribute">modeToggle</span>: <span class="hljs-function">-&gt;</span>
-    <span class="hljs-keyword">if</span> <span class="hljs-property">@mode</span> = <span class="hljs-string">'DOZ'</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@equation</span>.length != <span class="hljs-number">0</span>
+      lastChar = <span class="hljs-property">@equation</span>.charAt(<span class="hljs-property">@equation</span>.length-<span class="hljs-number">1</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>If key pressed is an operator (not digit)…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> !digit</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Check whether last character in equation is also an operator…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> lastChar.match <span class="hljs-regexp">/[^0-9XL]/</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Remove the last charcter</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-property">@equation</span> = <span class="hljs-property">@equation</span>.substr(<span class="hljs-number">0</span>, <span class="hljs-property">@equation</span>.length-<span class="hljs-number">1</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>And add current character to equation and output</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@equation</span> += currentChar
+    <span class="hljs-property">@outputDiv</span>.innerHTML = <span class="hljs-property">@equation</span>
+
+
+  <span class="hljs-attribute">modeToggle</span>: <span class="hljs-function">=&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@mode</span> <span class="hljs-keyword">is</span> <span class="hljs-string">'DOZ'</span>
       <span class="hljs-property">@mode</span> = <span class="hljs-string">'DEC'</span>
+      <span class="hljs-property">@equation</span> = <span class="hljs-property">@dozToDec</span>(<span class="hljs-property">@equation</span>)
+      <span class="hljs-property">@outputDiv</span>.innerHTML = <span class="hljs-property">@equation</span>
       <span class="hljs-property">@modeDiv</span>.innerHTML = <span class="hljs-string">'DEC'</span>
     <span class="hljs-keyword">else</span>
       <span class="hljs-property">@mode</span> = <span class="hljs-string">'DOZ'</span>
-      <span class="hljs-property">@modeDiv</span>.innerHTML =<span class="hljs-string">'DOZ'</span>
+      <span class="hljs-property">@equation</span> = <span class="hljs-property">@decToDoz</span>(<span class="hljs-property">@equation</span>)
+      <span class="hljs-property">@outputDiv</span>.innerHTML = <span class="hljs-property">@equation</span>
+      <span class="hljs-property">@modeDiv</span>.innerHTML = <span class="hljs-string">'DOZ'</span>
 
-  <span class="hljs-attribute">reset</span>: <span class="hljs-function">-&gt;</span>
+  <span class="hljs-attribute">equals</span>: <span class="hljs-function">-&gt;</span>
+    <span class="hljs-built_in">console</span>.log <span class="hljs-string">'equals pressed'</span>
+
+  <span class="hljs-attribute">reset</span>: <span class="hljs-function">=&gt;</span>
     <span class="hljs-property">@equation</span> = <span class="hljs-string">''</span>
     <span class="hljs-property">@outputDiv</span>.innerHTML = <span class="hljs-string">''</span>
 
-  <span class="hljs-attribute">display</span>: <span class="hljs-function"><span class="hljs-params">(output)</span> -&gt;</span>
-    <span class="hljs-property">@outputDiv</span>.innerHTML = output
 
   <span class="hljs-attribute">dozToDec</span>: <span class="hljs-function"><span class="hljs-params">(dozInt)</span> -&gt;</span>
-    neg = <span class="hljs-literal">false</span>
-    <span class="hljs-keyword">if</span> dozInt.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'-'</span>
-      dozInt= dozInt.substring <span class="hljs-number">1</span>
-      neg = <span class="hljs-literal">true</span>
 
-    res = <span class="hljs-number">0</span>
-    n = <span class="hljs-number">0</span>
+    <span class="hljs-built_in">console</span>.log <span class="hljs-string">'dozToDec ran with: '</span> + dozInt
 
-    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> dozInt.length
-      d = dozInt.charAt i
-      <span class="hljs-keyword">if</span> d <span class="hljs-keyword">is</span> <span class="hljs-string">'b'</span> <span class="hljs-keyword">then</span> n = <span class="hljs-number">11</span>
-      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> d <span class="hljs-keyword">is</span> <span class="hljs-string">'a'</span> <span class="hljs-keyword">then</span> n = <span class="hljs-number">10</span>
-      <span class="hljs-keyword">else</span> n = parseInt d
+    dozInt = <span class="hljs-property">@transform</span>(dozInt)
 
-      res += n*Math.pow(<span class="hljs-number">12</span>, dozInt.length-i-<span class="hljs-number">1</span>)
+    <span class="hljs-keyword">if</span> dozInt != <span class="hljs-string">''</span>
+      neg = <span class="hljs-literal">false</span>
+      <span class="hljs-keyword">if</span> dozInt.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'-'</span>
+        dozInt= dozInt.substring <span class="hljs-number">1</span>
+        neg = <span class="hljs-literal">true</span>
 
-    <span class="hljs-keyword">if</span> neg <span class="hljs-keyword">then</span> res = <span class="hljs-string">'-'</span> + res
+      res = <span class="hljs-number">0</span>
+      n = <span class="hljs-number">0</span>
 
-    res
+      <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>.dozInt.length-<span class="hljs-number">1</span>]
+        d = dozInt.charAt i
+        <span class="hljs-keyword">if</span> d <span class="hljs-keyword">is</span> <span class="hljs-string">'b'</span> <span class="hljs-keyword">then</span> n = <span class="hljs-number">11</span>
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> d <span class="hljs-keyword">is</span> <span class="hljs-string">'a'</span> <span class="hljs-keyword">then</span> n = <span class="hljs-number">10</span>
+        <span class="hljs-keyword">else</span> n = parseInt d
+        res += n * Math.pow(<span class="hljs-number">12</span>, dozInt.length-i-<span class="hljs-number">1</span>)
+
+      <span class="hljs-keyword">if</span> neg <span class="hljs-keyword">then</span> res = <span class="hljs-string">'-'</span> + res
+
+      <span class="hljs-built_in">console</span>.log <span class="hljs-string">'dozToDec end with: '</span> + res
+
+      <span class="hljs-keyword">return</span> <span class="hljs-property">@transform</span>(res)
+
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>
+
+  <span class="hljs-attribute">decToDoz</span>: <span class="hljs-function"><span class="hljs-params">(dec)</span> -&gt;</span>
+    <span class="hljs-built_in">console</span>.log <span class="hljs-string">'decToDoz ran with: '</span> + dec
+    dec = <span class="hljs-property">@transform</span>(dec)
+    <span class="hljs-keyword">if</span> dec != <span class="hljs-string">''</span>
+
+      <span class="hljs-built_in">console</span>.log <span class="hljs-string">'decToDoz ends with: '</span> + parseInt(dec).toString(<span class="hljs-number">12</span>)
+
+      <span class="hljs-keyword">return</span> <span class="hljs-property">@transform</span>(parseInt(dec).toString(<span class="hljs-number">12</span>))
+
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>
+
+  <span class="hljs-attribute">transform</span>: <span class="hljs-function"><span class="hljs-params">(input)</span> =&gt;</span>
+
+    <span class="hljs-built_in">console</span>.log <span class="hljs-string">'Transform ran with: '</span> + input</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Convert input to string</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    input = input.toString()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Determine if input is an equation i.e. contains operators</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> input.match <span class="hljs-regexp">/[^0-9XLab]/g</span>
+      <span class="hljs-built_in">console</span>.log <span class="hljs-string">'is an equation'</span>
+
+      output = []
+
+      <span class="hljs-built_in">console</span>.log <span class="hljs-string">"Input is an equation"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Split the string at operators</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      equation = input.replace <span class="hljs-regexp">/\*/g</span>, <span class="hljs-string">"#*#"</span>
+      equation = equation.replace <span class="hljs-regexp">/\//g</span>, <span class="hljs-string">"#/#"</span>
+      equation = equation.replace <span class="hljs-regexp">/\-/g</span>, <span class="hljs-string">"#-#"</span>
+      equation = equation.replace <span class="hljs-regexp">/\+/g</span>, <span class="hljs-string">"#+#"</span>
+      equation = equation.split <span class="hljs-regexp">/\#/g</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Swap AB for XL characters</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">0.</span>.equation.length-<span class="hljs-number">1</span>]
+        <span class="hljs-keyword">if</span> equation[i].match(<span class="hljs-regexp">/[0-9XLab]/</span>)
+          output[i] = <span class="hljs-keyword">this</span>.transform equation[i]
+        <span class="hljs-keyword">else</span>
+          output[i] = equation[i]
+
+      <span class="hljs-keyword">return</span> output.join(<span class="hljs-string">''</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Input is a number</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span>
+      <span class="hljs-built_in">console</span>.log <span class="hljs-string">'isnt an equation'</span>
+      <span class="hljs-keyword">if</span> input.match <span class="hljs-regexp">/[XL]/g</span>
+        input = input.replace <span class="hljs-regexp">/X/g</span>, <span class="hljs-string">'a'</span>
+        input = input.replace <span class="hljs-regexp">/L/g</span>, <span class="hljs-string">'b'</span>
+      <span class="hljs-keyword">else</span>
+        input = input.replace <span class="hljs-regexp">/a/g</span>, <span class="hljs-string">'X'</span>
+        input = input.replace <span class="hljs-regexp">/b/g</span>, <span class="hljs-string">'L'</span>
+      <span class="hljs-built_in">console</span>.log <span class="hljs-string">'returned: '</span> + input
+      <span class="hljs-keyword">return</span> input
 
 <span class="hljs-built_in">window</span>.onload = <span class="hljs-function">-&gt;</span>
   <span class="hljs-built_in">console</span>.log <span class="hljs-string">'loaded'</span>

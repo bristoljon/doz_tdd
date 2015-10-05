@@ -26,18 +26,23 @@ class Calculator
     return true
 
   clickHandler: (event) =>
+    # Get key clicked from event target
     currentChar = event.target.innerHTML
-    digit = event.target.className.match /\bdigit\b/
 
     if @equation.length != 0
+      # Get last character in equation
       lastChar = @equation.charAt(@equation.length-1)
 
       # If key pressed is an operator (not digit)...
-      if !digit
-      # Check whether last character in equation is also an operator...
+      if currentChar.match /[^0-9XL]/
+        # Check whether last character in equation is also an operator...
         if lastChar.match /[^0-9XL]/
-          # Remove the last charcter
+          # Remove the last character
           @equation = @equation.substr(0, @equation.length-1)
+    else
+      # Prevent starting equation with anything other than - or digit
+      if currentChar.match /[^0-9XL-]/
+        currentChar = ''
 
     # And add current character to equation and output
     @equation += currentChar
@@ -45,106 +50,110 @@ class Calculator
 
 
   modeToggle: =>
+    @equation = @equation.toString()
     if @mode is 'DOZ'
-      @mode = 'DEC'
-      @equation = @dozToDec(@equation)
+      if @equation != ''
+        # If number in display is an equation
+        if @equation.match(/[^0-9XL]/)
+          @equation = @convertEquation @equation
+        else
+          @equation = @dozToDec(@transform @equation)
+
       @outputDiv.innerHTML = @equation
       @modeDiv.innerHTML = 'DEC'
+      @mode = 'DEC'
     else
-      @mode = 'DOZ'
-      @equation = @decToDoz(@equation)
+      if @equation!= ''
+        if @equation.match(/[^0-9XL]/)
+          @equation = @convertEquation @equation
+        else
+          @equation = @transform(@decToDoz(@transform @equation))
       @outputDiv.innerHTML = @equation
+      @mode = 'DOZ'
       @modeDiv.innerHTML = 'DOZ'
 
-  equals: ->
-    console.log 'equals pressed'
+  equals: =>
+    answer = ''
+    if @mode is 'DOZ'
+      answer = @transform(@decToDoz(eval(@convertEquation @equation)))
+    else
+      answer = eval(@equation).toString()
+
+    @equation = answer
+    @outputDiv.innerHTML = @equation
+
 
   reset: =>
     @equation = ''
     @outputDiv.innerHTML = ''
 
+  convertEquation: (equation) =>
+    inArr = @stringToArray(equation)
+
+    outArr = []
+
+    for i in [0..inArr.length-1]
+      if inArr[i].match(/[^0-9XL]/)
+        outArr[i] = inArr[i]
+      else
+        if @mode is 'DOZ'
+          outArr[i] = @dozToDec(@transform inArr[i])
+        else
+          outArr[i] = @transform(@decToDoz(@transform inArr[i]))
+
+    return outArr.join('')
 
   dozToDec: (dozInt) ->
+    dozInt = dozInt.toString()
+    neg = false
+    if dozInt.charAt(0) is '-'
+      dozInt= dozInt.substring 1
+      neg = true
 
-    console.log 'dozToDec ran with: ' + dozInt
+    res = 0
+    n = 0
 
-    dozInt = @transform(dozInt)
+    for i in [0..dozInt.length-1]
+      d = dozInt.charAt i
+      if d is 'b' then n = 11
+      else if d is 'a' then n = 10
+      else n = parseInt d
+      res += n * Math.pow(12, dozInt.length-i-1)
 
-    if dozInt != ''
-      neg = false
-      if dozInt.charAt(0) is '-'
-        dozInt= dozInt.substring 1
-        neg = true
+    if neg then res = '-' + res
 
-      res = 0
-      n = 0
-
-      for i in [0..dozInt.length-1]
-        d = dozInt.charAt i
-        if d is 'b' then n = 11
-        else if d is 'a' then n = 10
-        else n = parseInt d
-        res += n * Math.pow(12, dozInt.length-i-1)
-
-      if neg then res = '-' + res
-
-      console.log 'dozToDec end with: ' + res
-
-      return @transform(res)
-
-    else return ''
+    return res.toString()
 
   decToDoz: (dec) ->
-    console.log 'decToDoz ran with: ' + dec
-    dec = @transform(dec)
-    if dec != ''
 
-      console.log 'decToDoz ends with: ' + parseInt(dec).toString(12)
+    return parseInt(dec).toString(12)
 
-      return @transform(parseInt(dec).toString(12))
 
-    else return ''
+  stringToArray: (equation) ->
+    # Split the string at operators
+    equation = equation.replace /\*/g, "#*#"
+    equation = equation.replace /\//g, "#/#"
+    equation = equation.replace /\-/g, "#-#"
+    equation = equation.replace /\+/g, "#+#"
+    output = equation.split /\#/g
 
-  transform: (input) =>
 
-    console.log 'Transform ran with: ' + input
-    # Convert input to string
+    return output
+
+  transform: (input) ->
+    # Replaces XL's with AB's and vice versa
+
     input = input.toString()
 
-    # Determine if input is an equation i.e. contains operators
-    if input.match /[^0-9XLab]/g
-      console.log 'is an equation'
+    if input.match /[XL]/g
+      input = input.replace /X/g, 'a'
+      input = input.replace /L/g, 'b'
 
-      output = []
-
-      console.log "Input is an equation"
-      # Split the string at operators
-      equation = input.replace /\*/g, "#*#"
-      equation = equation.replace /\//g, "#/#"
-      equation = equation.replace /\-/g, "#-#"
-      equation = equation.replace /\+/g, "#+#"
-      equation = equation.split /\#/g
-
-      # Swap AB for XL characters
-      for i in [0..equation.length-1]
-        if equation[i].match(/[0-9XLab]/)
-          output[i] = this.transform equation[i]
-        else
-          output[i] = equation[i]
-
-      return output.join('')
-
-    # Input is a number
     else
-      console.log 'isnt an equation'
-      if input.match /[XL]/g
-        input = input.replace /X/g, 'a'
-        input = input.replace /L/g, 'b'
-      else
-        input = input.replace /a/g, 'X'
-        input = input.replace /b/g, 'L'
-      console.log 'returned: ' + input
-      return input
+      input = input.replace /a/g, 'X'
+      input = input.replace /b/g, 'L'
+
+    return input
 
 window.onload = ->
   console.log 'loaded'

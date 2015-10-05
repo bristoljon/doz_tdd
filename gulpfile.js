@@ -1,7 +1,7 @@
 
 var gulp = require('gulp');
 var colors = require('colors');
-var karma = require('gulp-karma');
+var Server = require('karma').Server;
 var coffeelint = require('gulp-coffeelint');
 var coffee = require('gulp-coffee');
 var gutil = require('gulp-util');
@@ -45,17 +45,19 @@ gulp.task('docco',function() {
         .pipe(gulp.dest('./documentation-output-coffee'))
 });
 
-// Testing
-var testFiles = [
-    './src/js/*.js',
-    './spec/js/*.spec.js'
-];
 
-gulp.task('test', function() {
-  console.log("It's testing...".random)
+gulp.task('test', function (done) {
+  new Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, done).start();
+});
+
+gulp.task('sauce', function() {
+  console.log("It's saucing...".random)
   return gulp.src(testFiles)
     .pipe(karma({
-      configFile: 'karma.conf.js',
+      configFile: 'karma.conf-ci.js',
       action: 'run'
     }))
     .on('error', function(err) {
@@ -63,4 +65,5 @@ gulp.task('test', function() {
       throw err;
     });
 });
+
 

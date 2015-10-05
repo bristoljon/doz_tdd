@@ -5,8 +5,9 @@ calc = '';
 
 Calculator = (function() {
   function Calculator() {
-    this.transform = bind(this.transform, this);
+    this.convertEquation = bind(this.convertEquation, this);
     this.reset = bind(this.reset, this);
+    this.equals = bind(this.equals, this);
     this.modeToggle = bind(this.modeToggle, this);
     this.clickHandler = bind(this.clickHandler, this);
   }
@@ -38,15 +39,18 @@ Calculator = (function() {
   };
 
   Calculator.prototype.clickHandler = function(event) {
-    var currentChar, digit, lastChar;
+    var currentChar, lastChar;
     currentChar = event.target.innerHTML;
-    digit = event.target.className.match(/\bdigit\b/);
     if (this.equation.length !== 0) {
       lastChar = this.equation.charAt(this.equation.length - 1);
-      if (!digit) {
+      if (currentChar.match(/[^0-9XL]/)) {
         if (lastChar.match(/[^0-9XL]/)) {
           this.equation = this.equation.substr(0, this.equation.length - 1);
         }
+      }
+    } else {
+      if (currentChar.match(/[^0-9XL-]/)) {
+        currentChar = '';
       }
     }
     this.equation += currentChar;
@@ -54,21 +58,42 @@ Calculator = (function() {
   };
 
   Calculator.prototype.modeToggle = function() {
+    this.equation = this.equation.toString();
     if (this.mode === 'DOZ') {
-      this.mode = 'DEC';
-      this.equation = this.dozToDec(this.equation);
+      if (this.equation !== '') {
+        if (this.equation.match(/[^0-9XL]/)) {
+          this.equation = this.convertEquation(this.equation);
+        } else {
+          this.equation = this.dozToDec(this.transform(this.equation));
+        }
+      }
       this.outputDiv.innerHTML = this.equation;
-      return this.modeDiv.innerHTML = 'DEC';
+      this.modeDiv.innerHTML = 'DEC';
+      return this.mode = 'DEC';
     } else {
-      this.mode = 'DOZ';
-      this.equation = this.decToDoz(this.equation);
+      if (this.equation !== '') {
+        if (this.equation.match(/[^0-9XL]/)) {
+          this.equation = this.convertEquation(this.equation);
+        } else {
+          this.equation = this.transform(this.decToDoz(this.transform(this.equation)));
+        }
+      }
       this.outputDiv.innerHTML = this.equation;
+      this.mode = 'DOZ';
       return this.modeDiv.innerHTML = 'DOZ';
     }
   };
 
   Calculator.prototype.equals = function() {
-    return console.log('equals pressed');
+    var answer;
+    answer = '';
+    if (this.mode === 'DOZ') {
+      answer = this.transform(this.decToDoz(eval(this.convertEquation(this.equation))));
+    } else {
+      answer = eval(this.equation).toString();
+    }
+    this.equation = answer;
+    return this.outputDiv.innerHTML = this.equation;
   };
 
   Calculator.prototype.reset = function() {
@@ -76,83 +101,75 @@ Calculator = (function() {
     return this.outputDiv.innerHTML = '';
   };
 
+  Calculator.prototype.convertEquation = function(equation) {
+    var i, inArr, j, outArr, ref;
+    inArr = this.stringToArray(equation);
+    outArr = [];
+    for (i = j = 0, ref = inArr.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+      if (inArr[i].match(/[^0-9XL]/)) {
+        outArr[i] = inArr[i];
+      } else {
+        if (this.mode === 'DOZ') {
+          outArr[i] = this.dozToDec(this.transform(inArr[i]));
+        } else {
+          outArr[i] = this.transform(this.decToDoz(this.transform(inArr[i])));
+        }
+      }
+    }
+    return outArr.join('');
+  };
+
   Calculator.prototype.dozToDec = function(dozInt) {
     var d, i, j, n, neg, ref, res;
-    console.log('dozToDec ran with: ' + dozInt);
-    dozInt = this.transform(dozInt);
-    if (dozInt !== '') {
-      neg = false;
-      if (dozInt.charAt(0) === '-') {
-        dozInt = dozInt.substring(1);
-        neg = true;
-      }
-      res = 0;
-      n = 0;
-      for (i = j = 0, ref = dozInt.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
-        d = dozInt.charAt(i);
-        if (d === 'b') {
-          n = 11;
-        } else if (d === 'a') {
-          n = 10;
-        } else {
-          n = parseInt(d);
-        }
-        res += n * Math.pow(12, dozInt.length - i - 1);
-      }
-      if (neg) {
-        res = '-' + res;
-      }
-      console.log('dozToDec end with: ' + res);
-      return this.transform(res);
-    } else {
-      return '';
+    dozInt = dozInt.toString();
+    neg = false;
+    if (dozInt.charAt(0) === '-') {
+      dozInt = dozInt.substring(1);
+      neg = true;
     }
+    res = 0;
+    n = 0;
+    for (i = j = 0, ref = dozInt.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+      d = dozInt.charAt(i);
+      if (d === 'b') {
+        n = 11;
+      } else if (d === 'a') {
+        n = 10;
+      } else {
+        n = parseInt(d);
+      }
+      res += n * Math.pow(12, dozInt.length - i - 1);
+    }
+    if (neg) {
+      res = '-' + res;
+    }
+    return res.toString();
   };
 
   Calculator.prototype.decToDoz = function(dec) {
-    console.log('decToDoz ran with: ' + dec);
-    dec = this.transform(dec);
-    if (dec !== '') {
-      console.log('decToDoz ends with: ' + parseInt(dec).toString(12));
-      return this.transform(parseInt(dec).toString(12));
-    } else {
-      return '';
-    }
+    return parseInt(dec).toString(12);
+  };
+
+  Calculator.prototype.stringToArray = function(equation) {
+    var output;
+    equation = equation.replace(/\*/g, "#*#");
+    equation = equation.replace(/\//g, "#/#");
+    equation = equation.replace(/\-/g, "#-#");
+    equation = equation.replace(/\+/g, "#+#");
+    output = equation.split(/\#/g);
+    return output;
   };
 
   Calculator.prototype.transform = function(input) {
-    var equation, i, j, output, ref;
-    console.log('Transform ran with: ' + input);
     input = input.toString();
-    if (input.match(/[^0-9XLab]/g)) {
-      console.log('is an equation');
-      output = [];
-      console.log("Input is an equation");
-      equation = input.replace(/\*/g, "#*#");
-      equation = equation.replace(/\//g, "#/#");
-      equation = equation.replace(/\-/g, "#-#");
-      equation = equation.replace(/\+/g, "#+#");
-      equation = equation.split(/\#/g);
-      for (i = j = 0, ref = equation.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
-        if (equation[i].match(/[0-9XLab]/)) {
-          output[i] = this.transform(equation[i]);
-        } else {
-          output[i] = equation[i];
-        }
-      }
-      return output.join('');
+    if (input.match(/[XL]/g)) {
+      input = input.replace(/X/g, 'a');
+      input = input.replace(/L/g, 'b');
     } else {
-      console.log('isnt an equation');
-      if (input.match(/[XL]/g)) {
-        input = input.replace(/X/g, 'a');
-        input = input.replace(/L/g, 'b');
-      } else {
-        input = input.replace(/a/g, 'X');
-        input = input.replace(/b/g, 'L');
-      }
-      console.log('returned: ' + input);
-      return input;
+      input = input.replace(/a/g, 'X');
+      input = input.replace(/b/g, 'L');
     }
+    return input;
   };
 
   return Calculator;

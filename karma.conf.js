@@ -15,6 +15,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      './src/js/*.js',
+      './spec/js/*.spec.js'
     ],
 
 
@@ -42,7 +44,9 @@ module.exports = function(config) {
     plugins: [
       'karma-jasmine',
       'karma-mocha-reporter',
-      'karma-chrome-launcher'
+      'karma-chrome-launcher',
+      'karma-firefox-launcher',
+      'karma-phantomjs-launcher'
     ],
 
     // web server port
@@ -64,7 +68,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    browsers: ['Chrome','Firefox'],
 
 
     // Continuous Integration mode

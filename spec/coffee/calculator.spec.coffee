@@ -58,7 +58,7 @@ setUpHTML = ->
 
 dom = setUpHTML()
 calc = {}
-click_event = {}
+click_event = new MouseEvent 'click'
 
 describe "Test sets up DOM and calc objects for testing", ->
 
@@ -83,7 +83,7 @@ describe "Calculator UI tests", ->
     spyOn(calc, 'clickHandler').and.callThrough()
     spyOn(calc, 'reset').and.callThrough()
     spyOn(calc, 'equals').and.callThrough()
-    click_event = new MouseEvent 'click'
+
     calc.init()
 
   it "Starts in dozenal mode...", ->
@@ -119,8 +119,6 @@ describe "Calculator UI tests", ->
     dom.digits[4].dispatchEvent click_event
     dom.equals.dispatchEvent click_event
     expect(calc.equals).toHaveBeenCalled()
-    expect(calc.equation).toBe '234'
-    expect(dom.output.innerHTML).toBe '234'
 
   it "calls 'reset' method and clears display on 'C' key press", ->
     dom.cancel.dispatchEvent click_event
@@ -128,24 +126,24 @@ describe "Calculator UI tests", ->
     expect(calc.equation).toBe ''
     expect(dom.output.innerHTML).toBe ''
 
-  it "Prevents starting equation with anything other than '-' or digit", ->
-    click_event = new MouseEvent 'click'
-    dom.ops[0].dispatchEvent click_event
-    expect(dom.output.innerHTML).toBe ''
-
   it "Converts number from decimal to dozenal on 'mode' click", ->
     dom.digits[1].dispatchEvent click_event
     dom.digits[2].dispatchEvent click_event
     dom.mode.dispatchEvent click_event
-    expect(output.innerHTML).toBe 'X'
+    expect(output.innerHTML).toBe '10'
 
   it "Converts number from dozenal to decimal on 'mode' click", ->
     dom.mode.dispatchEvent click_event
-    expect(output.innerHTML).toBe '10'
+    expect(output.innerHTML).toBe '12'
+
+  it "Prevents starting equation with anything other than '-' or digit", ->
+    dom.cancel.dispatchEvent click_event
+    dom.ops[0].dispatchEvent click_event
+    expect(dom.output.innerHTML).toBe ''
 
 describe "Calculator Logic tests", ->
 
-  beforeEach ->
+  beforeAll ->
     calc = new Calculator
     calc.init()
 
@@ -155,14 +153,12 @@ describe "Calculator Logic tests", ->
       expect(calc.transform "XLXL").toBe "abab"
       expect(calc.transform "abba").toBe "XLLX"
 
-    xit "Converts dozenal equation strings to decimal ones", ->
-      expect(calc.transform "14+a-b*3/4").toBe "16+10-11*3/4"
+    it "Converts dozenal equation strings to decimal ones", ->
+      expect(calc.convertEquation "14+X-L*3/4").toBe "16+10-11*3/4"
 
-    xit "Converts decimal equation strings to dozenal ones", ->
+    it "Converts decimal equation strings to dozenal ones", ->
       dom.mode.dispatchEvent click_event
-      console.log calc.mode
-
-      expect(calc.transform "16+10-11*3/4").toBe "14+a-b*3/4"
+      expect(calc.convertEquation "16+10-11*3/4").toBe "14+X-L*3/4"
 
     it "Converts dozenal integers to decimal", ->
       expect(calc.dozToDec "10").toBe '12'
@@ -172,36 +168,57 @@ describe "Calculator Logic tests", ->
       expect(calc.decToDoz '456').toBe "320"
       expect(calc.decToDoz '3683').toBe "216b"
 
-  describe "Decimal maths operations", ->
-    it "Can add 2 decimal numbers", ->
-      calc.equation = '364+20'
-      expect(calc.equals()).toBe '384'
 
-    it "Can subtract 2 decimal numbers", ->
-      expect(calc.decMinus 364, 20).toBe 344
-
-    it "Can multiply 2 decimal numbers", ->
-      expect(calc.decAdd 24, 12).toBe 288
-
-    it "Can divide 2 decimal numbers", ->
-      expect(calc.decDivide 24, 4).toBe 6
 
   describe "Dozenal maths operations", ->
+
+    beforeEach ->
+      calc = new Calculator
+      calc.init()
+      calc.mode = 'DOZ'
+
+    it "Can add 2 dozenal numbers", ->
+      calc.equation = 'X+L'
+      expect(calc.equals()).toBe '19'
+
+    it "Can subtract 2 dozenal numbers", ->
+      calc.equation = '10-L'
+      expect(calc.equals()).toBe '1'
+
+    it "Can multiply 2 dozenal numbers", ->
+      calc.equation = '2*X'
+      expect(calc.equals()).toBe '18'
+
+    it "Can divide 2 dozenal numbers", ->
+      calc.equation = 'X0/2'
+      expect(calc.equals()).toBe '50'
+
+    it "Calculates dozenal formula to give correct answer", ->
+      calc.equation = "X+L*3-1"
+      expect(calc.equals()).toBe '36'
+
+  describe "Decimal maths operations", ->
+
+    beforeEach ->
+      calc.mode = 'DEC'
+
     it "Can add 2 decimal numbers", ->
-      expect(calc.decAdd 364, 20).toBe 384
+      calc.equation = '364+6'
+      expect(calc.equals()).toBe '370'
 
     it "Can subtract 2 decimal numbers", ->
-      expect(calc.decMinus 364, 20).toBe 344
+      calc.equation = "24-5"
+      expect(calc.equals()).toBe '19'
 
     it "Can multiply 2 decimal numbers", ->
-      expect(calc.decAdd 24, 12).toBe 288
+      calc.equation = "2*6"
+      expect(calc.equals()).toBe '12'
 
     it "Can divide 2 decimal numbers", ->
-      expect(calc.decDivide 24, 4).toBe 6
+      calc.equation = "24/3"
+      expect(calc.equals()).toBe '8'
 
-
-
-  describe "Evaluates equations correctly", ->
-    it "Calculates formula string to give correct answer", ->
-      expect(calc.equals "12+6*3-1/2").toBe '29.5'
+    it "Calculates decimal formula to give correct answer", ->
+      calc.equation = "12+6*3-1/2"
+      expect(calc.equals()).toBe '29.5'
 
